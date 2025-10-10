@@ -6,7 +6,7 @@ const stages = ['Lead', 'Demo', 'Proposal', 'Won', 'Lost'];
 export default function Board() {
   const [deals, setDeals] = useState([
     { id: '1', title: 'Acme Corp', value: 12000, stage: 'Lead' },
-    { id: '2', title: 'Globex', value: 8000, stage: 'Demo' },
+    { id: '2', title: 'Globex',    value:  8000, stage: 'Demo' },
   ]);
 
   const onDragEnd = (result) => {
@@ -15,6 +15,12 @@ export default function Board() {
     const [moved] = newDeals.splice(result.source.index, 1);
     moved.stage = result.destination.droppableId;
     setDeals(newDeals);
+
+    fetch('/api/move', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: moved.id, stage: result.destination.droppableId })
+    });
   };
 
   return (
@@ -48,4 +54,4 @@ export default function Board() {
       </DragDropContext>
     </div>
   );
-};
+}
