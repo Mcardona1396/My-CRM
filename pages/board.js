@@ -8,12 +8,12 @@ export default function Board() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ company: '', title: '', value: '', closeDate: '' });
 
-  /* load real deals */
+  /* load deals */
   useEffect(() => {
     fetch('/api/deals').then(r => r.json()).then(setDeals);
   }, []);
 
-  /* create new deal */
+  /* create deal */
   async function createDeal(e) {
     e.preventDefault();
     const newDeal = await fetch('/api/newDeal', {
@@ -26,6 +26,12 @@ export default function Board() {
     setShowForm(false);
   }
 
+  /* delete deal */
+  async function deleteDeal(id) {
+    await fetch('/api/deleteDeal', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+    setDeals(deals.filter(d => d.id !== id));
+  }
+
   /* drag move */
   const onDragEnd = (result) => {
     if (!result.destination) return;
@@ -33,11 +39,7 @@ export default function Board() {
     const [moved] = newDeals.splice(result.source.index, 1);
     moved.stage = result.destination.droppableId;
     setDeals(newDeals);
-    fetch('/api/move', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: moved.id, stage: result.destination.droppableId }),
-    });
+    fetch('/api/move', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: moved.id, stage: result.destination.droppableId }) });
   };
 
   return (
@@ -68,10 +70,19 @@ export default function Board() {
                   {deals.filter(d => d.stage === s).map((d, i) => (
                     <Draggable key={d.id} draggableId={d.id} index={i}>
                       {(provided) => (
-                        <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}
-                             style={{ background: '#fff', padding: 8, marginTop: 8, borderRadius: 4, ...provided.draggableProps.style }}>
-                          <div>{d.title}</div>
-                          <div style={{ fontWeight: 'bold' }}>${(d.value / 1000).toFixed(0)}k</div>
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          style={{ background: '#fff', padding: 8, marginTop: 8, borderRadius: 4, ...provided.draggableProps.style }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <div>
+                              <div>{d.title}</div>
+                              <div style={{ fontWeight: 'bold' }}>${(d.value / 1000).toFixed(0)}k</div>
+                            </div>
+                            <button onClick={() => deleteDeal(d.id)} style={{ marginLeft: 8, cursor: 'pointer' }}>×</button>
+                          </div>
                         </div>
                       )}
                     </Draggable>
