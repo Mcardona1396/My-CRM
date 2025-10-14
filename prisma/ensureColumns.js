@@ -2,25 +2,10 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function ensureColumns() {
-  const cols = [
-    'contact   TEXT',
-    'email     TEXT',
-    'accounts  TEXT',
-    'phone     TEXT',
-    'type      TEXT',
-    'location  TEXT',
-    'priority  TEXT',
-    'comments  TEXT'
-  ];
+  const cols = ['contact','email','accounts','phone','type','location','priority','comments'];
   for (const c of cols) {
-    const [name, type] = c.split(/\s+/);
-    try {
-      await prisma.$executeRawUnsafe(`ALTER TABLE "Deal" ADD COLUMN IF NOT EXISTS "${name}" ${type};`);
-    } catch (e) {
-      // column already exists → ignore
-    }
+    try{await prisma.$executeRawUnsafe(`ALTER TABLE "Deal" ADD COLUMN IF NOT EXISTS "${c}" TEXT;`)}catch(e){}
   }
   await prisma.$disconnect();
 }
-
 ensureColumns();
